@@ -12,10 +12,7 @@ struct ContentView: View {
     @State private var wakeUp = defaultWakeTime
     @State private var sleepAmount = 8.0
     @State private var coffeeAmount = 1
-    
-    @State private var alertTitle = ""
-    @State private var alertMessage = ""
-    @State private var showingAlert = false
+    @State private var predictedBedtime = ""
     
     static var defaultWakeTime: Date {
         var components = DateComponents()
@@ -28,62 +25,43 @@ struct ContentView: View {
         NavigationView {
             Form {
                 Section {
-                    Text("When do you want to wake up?")
-                        .font(.headline)
-                    
                     DatePicker("Please enter a time", selection: $wakeUp, displayedComponents: .hourAndMinute)
                         .labelsHidden()
                         .onChange(of: wakeUp) { value in
-                            print("Wake up time changed! \(wakeUp)")
                             calculateBedtime()
                         }
+                } header: {
+                    Text("When do you want to wake up?")
                 }
                 
                 Section {
-                    Text("Desired amount of sleep")
-                        .font(.headline)
-                    
                     Stepper("\(sleepAmount.formatted()) hours", value: $sleepAmount, in: 4...12, step: 0.25)
                         .onChange(of: sleepAmount) { value in
-                            print("sleep amount changed! \(sleepAmount)")
                             calculateBedtime()
                         }
+                } header: {
+                    Text("Desired amount of sleep")
                 }
                 
                 Section {
-                    Text("Daily coffee intake")
-                        .font(.headline)
-                    
                     Stepper(coffeeAmount == 1 ? "1 cup" : "\(coffeeAmount) cups", value: $coffeeAmount, in: 1...20)
-                    //                    Picker("Coffee cups", selection: $coffeeAmount) {
-                    //                        ForEach(1..<21) {
-                    //                            Text($0, format: .number)
-                    //                        }
-                    //                    }
                         .onChange(of: coffeeAmount) { value in
-                            print("Coffee amount changed! \(coffeeAmount)")
                             calculateBedtime()
                         }
+                } header: {
+                    Text("Daily coffee intake")
                 }
                 
                 Section {
                     HStack {
                         Text("Your ideal bedtime is:")
-                        Text("\(alertMessage == "" ? "11:00 PM" : alertMessage)")
+                        Text("\(predictedBedtime == "" ? "11:00 PM" : predictedBedtime)")
                             .font(.title3)
                     }
                 }
                 
             }
             .navigationTitle("BetterRest")
-            //            .toolbar {
-            //                Button("Calculate", action: calculateBedtime)
-            //            }
-            //            .alert(alertTitle, isPresented: $showingAlert) {
-            //                Button("OK") {}
-            //            } message: {
-            //                Text(alertMessage)
-            //            }
         }
         .onAppear() {
             calculateBedtime()
@@ -104,14 +82,10 @@ struct ContentView: View {
                                                   coffee: Double(coffeeAmount))
             let sleepTime = wakeUp - prediction.actualSleep
             
-            alertTitle = "Your ideal bedtime is..."
-            alertMessage = sleepTime.formatted(date: .omitted, time: .shortened)
+            predictedBedtime = sleepTime.formatted(date: .omitted, time: .shortened)
         } catch {
-            alertTitle = "Error"
-            alertMessage = "Sorry, there was a problem calculating your bedtime."
+            predictedBedtime = "Sorry, there was a problem calculating your bedtime."
         }
-        
-        showingAlert = true
     }
 }
 
